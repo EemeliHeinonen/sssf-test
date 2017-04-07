@@ -12,7 +12,7 @@ const app = express();
 
 // set up database
 //DB.connect('mongodb://'+config.user+':'+config.pwd+'@localhost/spy', app);
-DB.connect('mongodb://'+config.user+':'+config.pwd+'@mongodb12949-sssf-eemelih.jelastic.metropolia.fi/spy:27017', app);
+DB.connect('mongodb://'+config.user+':'+config.pwd+'@mongodb12949-sssf-eemelih.jelastic.metropolia.fi/spy', app);
 
 const spySchema = {
     time: Date,
