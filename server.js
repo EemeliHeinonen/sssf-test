@@ -11,8 +11,8 @@ const config = require('./config');
 const app = express();
 
 // set up database
-// DB.connect('mongodb://alakerta:q1w2e3r4@localhost/alakerta', app);
-DB.connect('mongodb://'+config.user+':'+config.pwd+'@localhost/spy', app);
+//DB.connect('mongodb://'+config.user+':'+config.pwd+'@localhost/spy', app);
+DB.connect('mongodb://'+config.user+':'+config.pwd+'@mongodb12949-sssf-eemelih.jelastic.metropolia.fi/spy:27017', app);
 
 const spySchema = {
     time: Date,
@@ -80,7 +80,7 @@ app.post('/new', upload.single('file'), (req, res, next) => {
     }
 });
 
-Spy.find().exec().then((spies)=>{
+Spy.find().exec().then((spies) => {
     //TODO update stuff
 
 });
@@ -91,7 +91,7 @@ app.put('/update', function (req, res) {
 
     Spy.findById(myCat._id, (err, upd) => {
         upd = req.body;
-        upd.save((err, updatedItem)=> {
+        upd.save((err, updatedItem) => {
           if (err) return handleError(err);
         });
     })
