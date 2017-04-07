@@ -85,7 +85,12 @@ const update = (items) => {
             });
             myModal.modal('show');
         });
+
+        const selectOption = document.createElement('option');
+        selectOption.value = item.title;
+        selectOption.innerHTML = item.title;
         document.querySelector('.card-deck').appendChild(article);
+        document.querySelector('#select-cat').appendChild(selectOption);
     }
 };
 
@@ -123,6 +128,27 @@ document.querySelector('#spyForm').addEventListener('submit', (evt) => {
 
     fetch(url, {
         method: 'post',
+        body: data
+    }).then((resp)=> {
+        // console.log(resp);
+        getData();
+        $('#myTabs a:first').tab('show');
+    });
+});
+
+
+// update document
+document.querySelector('#spyForm-update').addEventListener('submit', (evt) => {
+    evt.preventDefault();
+    const data = new FormData(evt.target);
+    const fileElement = event.target.querySelector('input[type=file]');
+    const file = fileElement.files[0];
+    data.append('file', file);
+
+    const url = '/update';
+
+    fetch(url, {
+        method: 'put',
         body: data
     }).then((resp)=> {
         // console.log(resp);

@@ -1,15 +1,19 @@
+"use strict";
+
 const express = require('express');
 const path = require('path');
 const multer = require('multer');
 const ExifImage = require('exif').ExifImage;
 const DB = require('./modules/database');
 const thumbnail = require('./modules/thumbnail');
+const config = require('./config');
 
 const app = express();
 
 // set up database
 // DB.connect('mongodb://alakerta:q1w2e3r4@localhost/alakerta', app);
-DB.connect('mongodb://alakerta:q1w2e3r4@mongodb12679-alakerta.jelastic.metropolia.fi/alakerta', app);
+DB.connect('mongodb://'+config.user+':'+config.pwd+'@localhost/spy', app);
+
 const spySchema = {
     time: Date,
     category: String,
@@ -46,6 +50,7 @@ app.use('/modules', express.static('node_modules'));
 
 
 
+
 // get posts
 app.get('/posts', (req, res) => {
     Spy.find().exec().then((posts) => {
@@ -63,22 +68,33 @@ app.post('/new', upload.single('file'), (req, res, next) => {
     req.body.time = new Date().getTime();
     // get EXIF data
     try {
-        new ExifImage({image: file.path}, function (error, exifData) {
-            if (error) {
-                console.log('Error: ' + error.message);
-            } else {
-                // console.log(exifData.gps);
-                req.body.coordinates = {
-                    lat: gpsToDecimal(exifData.gps.GPSLatitude, exifData.gps.GPSLatitudeRef),
-                    lng: gpsToDecimal(exifData.gps.GPSLongitude, exifData.gps.GPSLongitudeRef)
-                }; // Do something with your data!
-                next();
-            }
-        });
+        req.body.coordinates = {
+            lat: 60.2196781,
+            lng: 24.8079786
+        };
+        next();
+
     } catch (error) {
         console.log('Error: ' + error.message);
         res.send({status: 'error', message: 'EXIF error'});
     }
+});
+
+Spy.find().exec().then((spies)=>{
+    //TODO update stuff
+
+});
+
+app.put('/update', function (req, res) {
+    const catIndex = document.getElementById('select-cat').selectedIndex;
+    const myCat = originalData[catIndex];
+
+    Spy.findById(myCat._id, (err, upd) => {
+        upd = req.body;
+        upd.save((err, updatedItem)=> {
+          if (err) return handleError(err);
+        });
+    })
 });
 
 // create thumbnails
@@ -105,8 +121,11 @@ app.use('/new', (req, res, next) => {
 });
 // end add new ******************
 
+
+
 // convert GPS coordinates to GoogleMaps format
 const gpsToDecimal = (gpsData, hem) => {
     let d = parseFloat(gpsData[0]) + parseFloat(gpsData[1] / 60) + parseFloat(gpsData[2] / 3600);
     return (hem === 'S' || hem === 'W') ? d *= -1 : d;
 };
+
