@@ -12,7 +12,7 @@ const app = express();
 
 // set up database
 //DB.connect('mongodb://'+config.user+':'+config.pwd+'@localhost/spy', app);
-DB.connect('mongodb://'+config.user+':'+config.pwd+'@mongodb12949-sssf-eemelih.jelastic.metropolia.fi/spy', app);
+DB.connect('mongodb://'+config.user+':'+config.pwd+'@localhost:27017/spy', app);
 
 const spySchema = {
     time: Date,
@@ -58,6 +58,30 @@ app.get('/posts', (req, res) => {
     });
 });
 
+/// Find document ///
+app.get('/posts/:searchBy', (req, res) => {
+
+   /*
+   const searchBy = req.params.searchBy;
+   Spy.find().or([
+       {'title': {searchBy}},
+       {'category': {searchBy}}
+       ]).exec((err, doc) => {
+        res.send(JSON.stringify(doc));
+   });
+   */
+
+    const re = new RegExp(req.params.searchBy, 'i');
+
+    Spy.find().or([
+        { 'title': { $regex: re }},
+        { 'details': { $regex: re }},
+        { 'category': { $regex: re }}
+    ]).exec((err, result) => {
+        res.send(JSON.stringify(result));
+    });
+});
+
 // add new *************
 // get form data and create object for database (=req.body)
 app.post('/new', upload.single('file'), (req, res, next) => {
@@ -66,36 +90,13 @@ app.post('/new', upload.single('file'), (req, res, next) => {
     req.body.image = 'img/' + file.filename;
     req.body.original = 'original/' + file.filename;
     req.body.time = new Date().getTime();
-    // get EXIF data
-    try {
-        req.body.coordinates = {
-            lat: 60.2196781,
-            lng: 24.8079786
-        };
-        next();
-
-    } catch (error) {
-        console.log('Error: ' + error.message);
-        res.send({status: 'error', message: 'EXIF error'});
-    }
+    req.body.coordinates = {
+        lat: 60.2196781,
+        lng: 24.8079786 };
+    next();
 });
 
-Spy.find().exec().then((spies) => {
-    //TODO update stuff
 
-});
-
-app.put('/update', function (req, res) {
-    const catIndex = document.getElementById('select-cat').selectedIndex;
-    const myCat = originalData[catIndex];
-
-    Spy.findById(myCat._id, (err, upd) => {
-        upd = req.body;
-        upd.save((err, updatedItem) => {
-          if (err) return handleError(err);
-        });
-    })
-});
 
 // create thumbnails
 app.use('/new', (req, res, next) => {
@@ -121,11 +122,73 @@ app.use('/new', (req, res, next) => {
 });
 // end add new ******************
 
+// Update document *************
 
+app.patch('/patch', upload.single('file'), (req, res, next) => {
+
+    if (req.file != null) {
+        const file = req.file;
+        req.body.thumbnail = 'thumb/' + file.filename;
+        req.body.image = 'img/' + file.filename;
+        req.body.original = 'original/' + file.filename;
+        req.body.time = new Date().getTime();
+        req.body.coordinates = {
+            lat: 60.2196781,
+            lng: 24.8079786 };
+    }
+    next();
+});
+
+// create thumbnails
+app.use('/patch', (req, res, next) => {
+    if (req.file != null) {
+        const small = thumbnail.getThumbnail('files/' + req.body.original, 'files/' + req.body.thumbnail, 300, 300);
+        if (typeof small === 'object') {
+            res.send(small);
+        }
+        const medium = thumbnail.getThumbnail('files/' + req.body.original, 'files/' + req.body.image, 720, 480);
+        if (typeof medium === 'object') {
+            res.send(medium);
+        }
+    }
+    next();
+});
+
+app.use('/patch', (req, res, next) => {
+   console.log(req.body);
+
+    const query = {_id: req.body.id};
+    const update = {$set: req.body};
+
+   Spy.findOneAndUpdate(query, update).then(post => {
+       //res.send({status: 'OK', post: post});
+       res.sendStatus(200);
+   }).then(() => {
+       //res.send({status: 'error', message: 'Database error'});
+       res.sendStatus(400);
+   });
+});
+
+// End update *************
+
+app.delete('/delete', upload.single('file'), (req, res) => {
+    console.log(req.body);
+    Spy.findByIdAndRemove(req.body.id, (err, remove) => {
+        remove.save((err, deletedItem) => {
+            if (err) return handleError(err);
+        })
+    }).then(post => {
+        res.send({status: 'OK', post: post});
+    }).then(() => {
+        res.send({status: 'error', message: 'Database error'});
+    });
+
+});
 
 // convert GPS coordinates to GoogleMaps format
 const gpsToDecimal = (gpsData, hem) => {
     let d = parseFloat(gpsData[0]) + parseFloat(gpsData[1] / 60) + parseFloat(gpsData[2] / 3600);
     return (hem === 'S' || hem === 'W') ? d *= -1 : d;
 };
+
 

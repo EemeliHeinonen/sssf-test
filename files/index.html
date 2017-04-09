@@ -33,7 +33,10 @@
                     <a class="nav-link" href="#add">Add</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#update">Update</a>
+                    <a class="nav-link" id="tab-update" href="#update">Update</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#delete">Delete</a>
                 </li>
             </ul>
         </div>
@@ -50,6 +53,14 @@
                             <button id="reset-button" class="btn btn-secondary">All</button>
                         </div>
                     </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="input-group">
+                    <input id="searchInput" type="text" class="form-control" placeholder="Search for...">
+                    <span class="input-group-btn">
+                            <button class="btn btn-secondary" type="button" id="searchButton">Go!</button>
+                        </span>
                 </div>
             </div>
             <div class="row">
@@ -99,9 +110,9 @@
             <div class="row">
                 <div id="form-update" class="col">
                     <div class="jumbotron">
-                        <h3>New SpyEvent</h3>
+                        <h3>Update SpyEvent</h3>
                     </div>
-                    <select id="select-cat"></select>
+                    <select id="select-update-spy"></select>
                     <form id="spyForm-update">
                         <div class="form-group">
                             <label for="category">Category</label>
@@ -127,6 +138,19 @@
                             <small id="imageHelp-update" class="form-text text-muted">Add image</small>
                         </div>
                         <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane" id="delete" role="tabpanel">
+            <div class="row">
+                <div id="form-delete" class="col">
+                    <h3>Delete SpyEvent</h3>
+                    <label>Select item to delete</label>
+                    <select class="form-control" id="select-delete-spy"></select>
+                    <br>
+                    <form id="spyForm-delete">
+                        <button type="submit" class="btn btn-danger">Delete</button>
                     </form>
                 </div>
             </div>

@@ -41,11 +41,10 @@ const categoryButtons = (items) => {
 
 const sortItems = (items, rule) => {
     const newItems = items.filter(item => item.category === rule);
-    // console.log(newItems);
     update(newItems);
 };
 
-const getData = () => {
+const getData = (query) => {
     fetch('/posts')
         .then(response => {
             return response.json();
@@ -54,6 +53,16 @@ const getData = () => {
             originalData = items;
             update(items);
         });
+    if (query != null) {
+        fetch('/posts/'+query)
+            .then(response => {
+                return response.json();
+            })
+            .then(items => {
+                originalData = items;
+                update(items);
+            });
+    }
 
 };
 
@@ -86,11 +95,15 @@ const update = (items) => {
             myModal.modal('show');
         });
 
-        const selectOption = document.createElement('option');
-        selectOption.value = item.title;
-        selectOption.innerHTML = item.title;
+        const selectOptionUpdate = document.createElement('option');
+        const selectOptionDelete = document.createElement('option');
+        selectOptionUpdate.value = item.title;
+        selectOptionUpdate.innerText = item.title;
+        selectOptionDelete.value = item.title;
+        selectOptionDelete.innerText = item.title;
         document.querySelector('.card-deck').appendChild(article);
-        document.querySelector('#select-cat').appendChild(selectOption);
+        document.querySelector('#select-update-spy').appendChild(selectOptionUpdate);
+        document.querySelector('#select-delete-spy').appendChild(selectOptionDelete);
     }
 };
 
@@ -144,17 +157,73 @@ document.querySelector('#spyForm-update').addEventListener('submit', (evt) => {
     const fileElement = event.target.querySelector('input[type=file]');
     const file = fileElement.files[0];
     data.append('file', file);
+    const spyIndex = document.getElementById('select-update-spy').selectedIndex;
+    const mSpy = originalData[spyIndex]._id;
+    data.append('id', mSpy);
 
-    const url = '/update';
+    const url = '/patch';
 
     fetch(url, {
-        method: 'put',
+        method: 'PATCH',
+        body: data
+    }).then((resp)=> {
+         console.log(resp);
+        getData();
+        $('#myTabs a:first').tab('show');
+    });
+});
+
+// delete cat
+document.querySelector('#spyForm-delete').addEventListener('submit', (evt) => {
+    evt.preventDefault();
+    const spyIndex = document.getElementById('select-delete-spy').selectedIndex;
+    const mSpy = originalData[spyIndex]._id;
+    const data = new FormData();
+    data.append('id',mSpy);
+
+    const url = '/delete';
+
+    fetch(url, {
+        method: 'delete',
         body: data
     }).then((resp)=> {
         // console.log(resp);
         getData();
         $('#myTabs a:first').tab('show');
     });
+});
+
+document.getElementById('searchButton').addEventListener('click', () => {
+    const searchQuery = document.getElementById('searchInput').value;
+    getData(searchQuery);
+});
+document.getElementById('searchInput').addEventListener('keypress', (e) => {
+    const key = e.which || e.keyCode;
+    if (key === 13) {
+        const searchQuery = document.getElementById('searchInput').value;
+        getData(searchQuery);
+    }
+});
+
+
+// listener for select options
+document.getElementById('select-update-spy').addEventListener('change', () => {
+    const spyIndex = document.getElementById('select-update-spy').selectedIndex;
+    const mSpy = originalData[spyIndex];
+
+    document.getElementById('category-update').value = mSpy.category;
+    document.getElementById('title-update').value = mSpy.title;
+    document.getElementById('details-update').value = mSpy.details;
+});
+
+// update values for the current selection when moving to the update tab
+$('#tab-update').click(function (e) {
+    const spyIndex = document.getElementById('select-update-spy').selectedIndex;
+    const mSpy = originalData[spyIndex];
+
+    document.getElementById('category-update').value = mSpy.category;
+    document.getElementById('title-update').value = mSpy.title;
+    document.getElementById('details-update').value = mSpy.details;
 });
 
 
