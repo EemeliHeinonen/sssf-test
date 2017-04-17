@@ -61,16 +61,6 @@ app.get('/posts', (req, res) => {
 /// Find document ///
 app.get('/posts/:searchBy', (req, res) => {
 
-   /*
-   const searchBy = req.params.searchBy;
-   Spy.find().or([
-       {'title': {searchBy}},
-       {'category': {searchBy}}
-       ]).exec((err, doc) => {
-        res.send(JSON.stringify(doc));
-   });
-   */
-
     const re = new RegExp(req.params.searchBy, 'i');
 
     Spy.find().or([
@@ -121,6 +111,7 @@ app.use('/new', (req, res, next) => {
     });
 });
 // end add new ******************
+
 
 // Update document *************
 
@@ -184,11 +175,5 @@ app.delete('/delete', upload.single('file'), (req, res) => {
     });
 
 });
-
-// convert GPS coordinates to GoogleMaps format
-const gpsToDecimal = (gpsData, hem) => {
-    let d = parseFloat(gpsData[0]) + parseFloat(gpsData[1] / 60) + parseFloat(gpsData[2] / 3600);
-    return (hem === 'S' || hem === 'W') ? d *= -1 : d;
-};
 
 
